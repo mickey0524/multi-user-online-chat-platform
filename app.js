@@ -60,8 +60,9 @@ io.on('connection', socket => {
 
   socket.on('say', data => {
     if (data.to === 'all') { // 群发
-      socket.broadcast.emit('say', data);
+      io.sockets.emit('say', data);
     } else {
+      socket.emit('say', data); // 发给自己
       const clients = io.sockets.clients; // 私聊
       for (let i = 0, len = clients.length; i < len; i++) {
         if (clients[i].name === data.to) {
