@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const ejs = require('ejs');
 
-const route = require('./route');
+const router = require('./route');
 
 const app = express();
 
@@ -14,11 +14,27 @@ app.engine('.html', ejs.__express);
 app.set('view engine', 'html');
 app.set('port', process.env.PORT || 5000);
 app.set('views', `${__dirname}/views`);
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-route(app);
+router(app);
+
+app.post('/signin', (req, resp, next) => {
+  const user = req.body.user;
+  try {
+    if (users[user]) {
+      resp.redirect('/signin');
+    } else {
+      resp.cookie('user', user, { maxAge: 1000 * 60 * 60 * 24 * 30 });
+      resp.redirect('/');
+    }
+  } catch (err) {
+    next(err, req, resp);
+  }
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+  <title>登录</title>
   <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="/css/signin.css">  
 </head>
-
 <body>
   <div class="container">
-    asda
+    <form action="/signin" method="POST">
+      <div class="form-item">
+        <span>昵称: </span>
+        <input type="text" name="user" />
+      </div>
+      <div class="form-btn-group">
+        <button type="submit">登录</button>
+        <button type="reset">取消</button>
+      </div>
+    </form>
   </div>
-  <!-- <script type="text/javascript" src="/public/js/signin.js"></script> -->
 </body>
-
 </html>
