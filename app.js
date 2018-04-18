@@ -72,7 +72,7 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on('offline', data => {
+  socket.on('disconnect', data => {
     if (users[socket.name]) {
       Reflect.deleteProperty(users, socket.name);
       socket.broadcast.emit('offline', data);
