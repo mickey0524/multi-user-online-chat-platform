@@ -55,7 +55,7 @@ io.on('connection', socket => {
     if (!users[data.user]) {
       users[data.user] = data.user;
     }
-    io.sockets.emit('online', { users: users, user: data.user });
+    io.sockets.emit('online', { users: users, user: data.user });          
   });
 
   socket.on('say', data => {
@@ -76,7 +76,7 @@ io.on('connection', socket => {
   socket.on('disconnect', data => {
     if (users[socket.name]) {
       Reflect.deleteProperty(users, socket.name);
-      socket.broadcast.emit('offline', data);
+      socket.broadcast.emit('offline', { user: socket.name });
     }
   });
 });
