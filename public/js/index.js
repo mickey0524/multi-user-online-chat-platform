@@ -1,27 +1,33 @@
-// const socket = io('http://127.0.0.1:5000');
-// const submitBtn = document.querySelector('#submit-btn');
-// const inputBox = document.querySelector('#input-box');
-// const chatBox = document.querySelector('.chat-box');
-
-// socket.on('connect', () => {
-//   submitBtn.addEventListener('click', () => {
-//     socket.emit('news', inputBox.value);
-//     inputBox.value = '';
-//   }, false);
-//   socket.on('news', (data) => {
-//     const message = document.createElement('p');
-//     message.className = 'chat-message-item';
-//     message.innerHTML = data;
-//     chatBox.appendChild(message);
-//   });
-// });
-
 $(function() {
   const socket = io('http://127.0.0.1:5000');
   const user = $.cookie('user');
   const $userList = $('.user-list');
+  const $messageList = $('.chat-message');
+  const $inputBox = $('#input-box');
   let userArr = []; // 解决reconnect的单一用户多显示bug
-  let to = 'all';
+  let isInputBoxFocus = true;
+
+  $inputBox.focus(() => {
+    isInputBoxFocus = true;
+  });
+
+  $inputBox.blur(() => {
+    isInputBoxFocus = false;
+  });
+
+  $userList.dblclick(ev => {
+    const target = ev.target;
+    $inputBox.val(`给${$(target).text()}说悄悄话: `);
+  });
+
+  /**
+   * 获取当前时间
+   */
+  const getNowTime = () => {
+    const date = new Date();
+    const time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds());
+    return time;
+  }
   
   socket.on('connect', () => {
     socket.emit('online', { user });
@@ -81,8 +87,40 @@ $(function() {
     /**
      * 接收到有人说话
      */
-    socket.on('say', () => {
-      
+    socket.on('say', data => {
+      if (data.from !== user && data.to !== 'all' && data.to !== user) {
+        return;
+      }
+      const $messageItem = $(`<p class="chat-message-item">${user}: ${data.message} ${getNowTime()}</p>`);
+      if (data.from === user) {
+        $messageItem.addClass('sender');
+      }
+      $messageList.append($messageItem);
+    });
+
+    $(window).keydown(ev => {
+      if (isInputBoxFocus && ev.keyCode == 13) {
+        let inputBoxVal = $inputBox.val();
+        let to = 'all';
+        inputBoxVal = inputBoxVal.replace(/^给(.+)说悄悄话: /g, ($0, $1) => {
+          to = $1;
+          return '';
+        });
+        if (!inputBoxVal) {
+          return;
+        }
+        const data = {
+          from: user,
+          to,
+          message: inputBoxVal,
+        };
+        socket.emit('say', data);
+        if (to === 'all') {
+          $inputBox.val('');
+        } else {
+          $inputBox.val(`给${to}说悄悄话: `);
+        }
+      }
     });
   });
 });

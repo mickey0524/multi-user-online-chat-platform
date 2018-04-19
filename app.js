@@ -53,7 +53,7 @@ io.on('connection', socket => {
   socket.on('online', data => {
     socket.name = data.user;
     if (!users[data.user]) {
-      users[data.user] = data.user;
+      users[data.user] = socket.id;
     }
     io.sockets.emit('online', { users: users, user: data.user });          
   });
@@ -63,18 +63,12 @@ io.on('connection', socket => {
       io.sockets.emit('say', data);
     } else {
       socket.emit('say', data); // 发给自己
-      const clients = io.sockets.clients; // 私聊
-      for (let i = 0, len = clients.length; i < len; i++) {
-        if (clients[i].name === data.to) {
-          clients[i].emit('say', data);
-          break;
-        }
-      }
+      io.to(users[data.to]).emit('say', data);
     }
   });
 
   socket.on('disconnect', data => {
-    if (users[socket.name]) {
+    if (users[socket.name] !== undefined) {
       Reflect.deleteProperty(users, socket.name);
       socket.broadcast.emit('offline', { user: socket.name });
     }
