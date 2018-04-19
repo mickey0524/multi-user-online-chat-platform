@@ -24,6 +24,10 @@ button {
   margin-top: 20px;
 }
 
+button:focus {
+  outline: none;
+}
+
 button[type="submit"] {
   background: #F85959;
 }
